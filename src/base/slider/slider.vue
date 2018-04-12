@@ -4,10 +4,98 @@
       <slot>
       </slot>
     </div>
+    <div class="dots">
+      <span class="dot" v-for="(item,index) in dots" :key="item" :class="{active :
+      currentPageIndex === index }"></span>
+    </div>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+import BScroll from "better-scroll";
+import { addClass } from "common/js/dom";
+export default {
+  data() {
+    return {
+      dots: [],
+      currentPageIndex: 0
+    };
+  },
+  props: {
+    loop: {
+      // 是否循环轮播
+      type: Boolean,
+      default: true
+    },
+    autoPlay: {
+      // 是否自动轮播
+      type: Boolean,
+      default: true
+    },
+    interval: {
+      // 轮播时间
+      type: Number,
+      default: 600
+    }
+  },
+  mounted() {
+    setTimeout(() => {
+      this._setSliderWidth();
+      this._initDots();
+      this._initSlider();
+      if (this.autoPlay) {
+        this._play();
+      }
+    }, 20);
+  },
+  methods: {
+    _setSliderWidth() {
+      this.children = this.$refs.sliderGroup.children;
+      let width = 0;
+      let sliderWidth = this.$refs.slider.clientWidth; // 父元素的宽度
+      for (let i = 0; i < this.children.length; i++) {
+        let children = this.children[i];
+        addClass(children, "slider-item");
+        children.style.width = sliderWidth + "px";
+        width += sliderWidth; // 第二层父元素的宽度
+      }
+      if (this.loop) {
+        width += 2 * sliderWidth;
+      }
+      this.$refs.sliderGroup.style.width = width + "px";
+    },
+    _initDots() {
+      this.dots = new Array(this.children.length);
+      console.log(this.dots);
+    },
+    _initSlider() {
+      this.slider = new BScroll(this.$refs.slider, {
+        scrollX: true,
+        scrollY: false,
+        momentum: false,
+        snap: {
+          loop: this.loop,
+          threshold: 0.3,
+          speed: 600
+        }
+      });
+      this.slider.on("scrollEnd", () => {
+        let pageIndex = this.slider.getCurrentPage().pageX;
+        this.currentPageIndex = pageIndex;
+        if (this.autoPlay) {
+          // clearTimeout(this.timer);
+          this._play();
+        }
+      });
+    },
+    _play() {
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => {
+        this.slider.next();
+      }, this.interval);
+    }
+  }
+};
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
@@ -15,6 +103,7 @@
 
 .slider {
   min-height: 1px;
+  position: relative;
 
   .slider-group {
     position: relative;
