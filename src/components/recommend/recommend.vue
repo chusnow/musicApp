@@ -1,35 +1,58 @@
 <template>
   <div class="recommend">
-    <div class="recommend-content">
+    <scroll  ref="scroll" class="recommend-content" :data="disList">
       <div v-if="recommends.length" class="slider-content">
         <slider>
           <div v-for="item in recommends" :key="item.id">
-            <a :href="item.linkUrl"></a>
-            <img :src="item.picUrl" alt="">
+            <a :href="item.linkUrl">
+                <img :src="item.picUrl" alt="">
+            </a>
+
           </div>
         </slider>
       </div>
       <div class="recommend-list">
-        <h1>热单搜索</h1>
+        <h1 class="list-title">热单搜索</h1>
+        <ul>
+          <li v-for="item in disList" :key="item.id" class="item">
+            <div class="icon">
+              <img  @load="loadImage"   class="needsclick" v-lazy="item.picUrl" alt="" width="60" height="60">
+            </div>
+            <div class="text">
+                <h2 class="name">{{item.songListAuthor}}</h2>
+                  <p class="desc">{{item.songListDesc}}</p>
+            </div>
+          </li>
+        </ul>
       </div>
-    </div>
+      <div class="loading-container" v-show="!disList.length">
+          <loading></loading>
+      </div>
+    </scroll>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
 import slider from "base/slider/slider";
+import scroll from "base/scroll/scroll";
+import loading from "base/loading/loading";
 import { getRecommend } from "api/recommend";
 import { ERR_OK } from "api/config";
 export default {
   components: {
-    slider
+    slider,
+    scroll,
+    loading
   },
   created() {
-    this._getRecommend();
+    setTimeout(() => {
+      this._getRecommend();
+    }, 1000);
   },
   data() {
     return {
-      recommends: []
+      recommends: [],
+      disList: []
     };
   },
   methods: {
@@ -37,8 +60,16 @@ export default {
       getRecommend().then(res => {
         if (res.code === ERR_OK) {
           this.recommends = res.data.slider;
+          this.disList = res.data.songList;
+          console.log(this.disList);
         }
       });
+    },
+    loadImage() {
+      if (!this.checkloaded) {
+        this.checkloaded = true;
+        this.$refs.scroll.refresh();
+      }
     }
   }
 };

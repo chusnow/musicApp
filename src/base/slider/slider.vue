@@ -35,7 +35,7 @@ export default {
     interval: {
       // 轮播时间
       type: Number,
-      default: 600
+      default: 1500
     }
   },
   mounted() {
@@ -47,9 +47,17 @@ export default {
         this._play();
       }
     }, 20);
+    window.addEventListener("resize", function() {
+      console.log(11);
+      if (!this.slider) {
+        return;
+      }
+      this._setSliderWidth(true);
+      this.slider.refresh();
+    });
   },
   methods: {
-    _setSliderWidth() {
+    _setSliderWidth(isResize) {
       this.children = this.$refs.sliderGroup.children;
       let width = 0;
       let sliderWidth = this.$refs.slider.clientWidth; // 父元素的宽度
@@ -59,7 +67,7 @@ export default {
         children.style.width = sliderWidth + "px";
         width += sliderWidth; // 第二层父元素的宽度
       }
-      if (this.loop) {
+      if (this.loop && !isResize) {
         width += 2 * sliderWidth;
       }
       this.$refs.sliderGroup.style.width = width + "px";
@@ -76,7 +84,7 @@ export default {
         snap: {
           loop: this.loop,
           threshold: 0.3,
-          speed: 600
+          speed: 500
         }
       });
       this.slider.on("scrollEnd", () => {
@@ -94,6 +102,9 @@ export default {
         this.slider.next();
       }, this.interval);
     }
+  },
+  distroyed() {
+    clearTimeout(this.timer);
   }
 };
 </script>
