@@ -48,7 +48,7 @@ export default {
       }
     }, 20);
     window.addEventListener("resize", function() {
-      console.log(11);
+      console.log(111);
       if (!this.slider) {
         return;
       }
