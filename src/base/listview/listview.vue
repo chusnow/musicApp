@@ -1,7 +1,7 @@
 <template>
-  <scroll class="listview" :data="data">
+  <scroll class="listview" :data="data" ref="listview">
     <ul>
-      <li v-for="group in data" :key="group.id" class="list-group">
+      <li v-for="group in data" :key="group.id" class="list-group" ref="listGroup">
         <h2 class="list-group-title">{{group.title}}</h2>
         <ul>
           <li class="list-group-item" v-for="item in group.items" :key="item.id">
@@ -11,10 +11,18 @@
         </ul>
       </li>
     </ul>
+    <div class="list-shortcut" @touchstart="onShortcutTouchStart" @touchmove.stop.prevent="onShortcutTouchMove">
+      <ul>
+        <li v-for="(item,index) in shortList" :key="item.id" :data-index="index" class="item">
+          {{item}}
+        </li>
+      </ul>
+    </div>
   </scroll>
 </template>
 <script type="text/ecmascript-6">
 import Scroll from "base/scroll/scroll";
+import { getData } from "common/js/dom";
 export default {
   props: {
     data: {
@@ -25,10 +33,24 @@ export default {
   components: {
     Scroll
   },
+  computed: {
+    shortList() {
+      return this.data.map(item => {
+        return item.title.substring(0, 1);
+      });
+    }
+  },
   watch: {
     data() {
       console.log(this.data);
     }
+  },
+  methods: {
+    onShortcutTouchStart(e) {
+      let anChorIndex = getData(e.target, "index");
+      this.$refs.listview.scrollToElement(this.$refs.listGroup[anChorIndex], 0);
+    },
+    onShortcutTouchMove(e) {}
   }
 };
 </script>
